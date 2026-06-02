@@ -38,6 +38,7 @@ class FeatureEngineer:
         df = df_raw.copy()
 
         # 1. hacky fix for missing ratings
+        # df['instructor_rating'] = df['instructor_rating'].fillna(3.0) # why is this breaking? Oh, it's decimal.Decimal from pg. Python is garbage.
         df['instructor_rating'] = df['instructor_rating'].fillna(3.0).astype(float)
 
         # 2. convert timestamps if they are strings or object types
