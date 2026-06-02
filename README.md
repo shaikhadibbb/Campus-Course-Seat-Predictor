@@ -39,12 +39,13 @@ python train.py
 ## Model performance
 
 Here are the cross-validation metrics I got from my training run:
-- **Mean Absolute Error (CV MAE)**: 4.5 hours (+/- 1.8)
-- **Bootstrap spread**: Standard deviation is around 12.4 hours (mostly wide because we don't have enough data yet).
+- **Mean Absolute Error (CV MAE)**: 60.7 hours (+/- 32.8) — yeah, the error is pretty high, but registration behavior is super random and 60 rows is small data.
+- **Bootstrap spread**: Standard deviation is around 12.4 hours (CI intervals are pretty wide as a result).
 
 ## Known Bugs
-- If you click "Retrain Model" while a prediction query is running, it might throw a 500 error because psycopg2 doesn't like concurrent connection requests in my messy code.
-- Some times the chart doesn't resize correctly on mobile safari, you have to rotate the screen to fix it.
+- **Retraining Blocks API**: Clicking "Retrain Model" runs synchronously on the backend, blocking the API request for ~20s. It runs in a thread pool so it doesn't freeze the whole server, but it makes the web page loader hang.
+- **Wide Confidence Intervals**: The confidence intervals (e.g. [4h - 54h] for a 27h prediction) are often wider than the prediction itself. This happens because Gradient Boosting trees are sequential (residuals) rather than independent like Random Forest, so bootstrapping them breaks their correlation structure and blows up the variance estimation.
+- **Mobile Styling**: Mobile Safari has rendering issues where the grids squish on very narrow screens (needs flex-wrap or media queries).
 - My date math assumes registration happens in the same timezone as the server, which will break if students are out of state.
 
 ## Next steps
