@@ -92,6 +92,33 @@ def startup_event():
             load_ml_models()
         except Exception as e:
             print(f"Startup training crashed: {e}")
+            
+    # 3. Pre-generate and cache predictions if database predictions table is empty
+    global predictor, feature_engineer
+    if predictor and feature_engineer:
+        try:
+            pred_count = db.execute_query("SELECT COUNT(*) as cnt FROM predictions;")
+            if pred_count and pred_count[0]["cnt"] == 0:
+                print("Predictions cache is empty on startup. Pre-generating for all courses...")
+                courses = db.get_courses()
+                if courses:
+                    courses_df = pd.DataFrame(courses)
+                    X_courses = feature_engineer.transform(courses_df)
+                    preds = predictor.predict_with_intervals(X_courses)
+                    for idx, row in courses_df.iterrows():
+                        pred = preds[idx]
+                        db.store_prediction(
+                            course_code=row["course_code"],
+                            semester=row["semester"],
+                            pred_hours=pred["predicted_hours"],
+                            lower=pred["lower_bound"],
+                            upper=pred["upper_bound"],
+                            p_24=pred["p_fill_24"],
+                            p_48=pred["p_fill_48"]
+                        )
+                    print("Startup predictions cache generation successful.")
+        except Exception as e:
+            print(f"Failed to generate startup predictions cache: {e}")
 
 # Serve the static frontend at root /
 @app.get("/", response_class=HTMLResponse)
