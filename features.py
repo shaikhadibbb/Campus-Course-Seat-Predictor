@@ -46,7 +46,8 @@ class FeatureEngineer:
         sem_dt = pd.to_datetime(df['semester_start'])
 
         # 3. days_until_semester_start
-        df['days_until_semester_start'] = (sem_dt - reg_dt).dt.total_seconds() / (24.0 * 3600.0)
+        days_diff = (sem_dt - reg_dt).dt.total_seconds() / (24.0 * 3600.0)
+        df['days_until_semester_start'] = np.maximum(0.0, days_diff) # clip to 0 so negative dates don't break prediction
 
         # 4. Cyclical encoding for hour_of_day (sin/cos) and day_of_week (sin/cos)
         hour_of_day = reg_dt.dt.hour

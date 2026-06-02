@@ -383,7 +383,7 @@
         <div>
             <h1>Campus Course Seat Predictor</h1>
             <!-- I hate styling forms, CSS is the worst -->
-            <div class="subtitle">Karnavati Univ Internship Project - Adib (Registrar Data Lab) -- draft 3 (dont show Chen)</div>
+            <div class="subtitle">Karnavati Univ - Adib's Internship Project -- draft 3 (dont show Chen)</div>
         </div>
         <button id="btnRefresh" class="btn-refresh" onclick="triggerRefresh()">
             <span id="refreshSpinner" class="loader hidden"></span>
@@ -532,7 +532,7 @@
                     <p style="margin-bottom: 8px;"><strong>Validation Strategy:</strong> 5-Fold TimeSeriesSplit (prevents future leakage)</p>
                     <p style="margin-bottom: 8px;"><strong>Cross-Validation MAE:</strong> <span style="color: var(--primary); font-weight: bold;">60.7 hours</span> (+/- 32.8h)</p>
                     <p style="margin-bottom: 8px;"><strong>Training Set Size:</strong> 60 rows (from historical courses & simulated data)</p>
-                    <p style="font-style: italic; color: #a78bfa; font-size: 0.75rem; margin-top: 12px;">*Note: Validation error is high because course registration behavior is pretty chaotic, but it beats raw guessing.</p>
+                    <p style="font-style: italic; color: #a78bfa; font-size: 0.75rem; margin-top: 12px;">*Note: Bootstrap intervals from GBRT are narrower than true uncertainty because trees are correlated. Model MAE is 60h — treat intervals as relative confidence, not absolute bounds.</p>
                 </div>
             </div>
         </div>
@@ -661,7 +661,7 @@
         function renderChart(courses) {
             const ctx = document.getElementById('chartComparison').getContext('2d');
             
-            const labels = courses.map(c => c.course_code);
+            const labels = courses.map(c => `${c.course_code} (${c.semester})`);
             const fillTimes = courses.map(c => c.predicted_hours);
             
             if (comparisonChart) {

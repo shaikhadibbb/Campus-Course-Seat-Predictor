@@ -39,13 +39,14 @@ python train.py
 ## Model performance
 
 Here are the cross-validation metrics I got from my training run:
-- **Mean Absolute Error (CV MAE)**: 60.7 hours (+/- 32.8) — yeah, the error is pretty high, but registration behavior is super random and 60 rows is small data.
-- **Bootstrap spread**: Standard deviation is around 12.4 hours (CI intervals are pretty wide as a result).
+- **Mean Absolute Error (CV MAE)**: 60.7 hours (+/- 32.8) — yeah, the error is pretty high (representing a ~30% error on average), but registration behavior is super random and we only have 60 rows of training data from 2 semesters.
+- **Uncertainty Limitations**: The bootstrap confidence intervals (e.g., ±15-20h) are narrower than the 60h model error. This is because Gradient Boosting trees are sequential (residuals) and highly correlated, unlike independent Random Forest trees. Bootstrapping them underestimates true variance. Treat the intervals as *relative* confidence, not absolute bounds.
 
 ## Known Bugs
-- **Retraining Blocks API**: Clicking "Retrain Model" runs synchronously on the backend, blocking the API request for ~20s. It runs in a thread pool so it doesn't freeze the whole server, but it makes the web page loader hang.
-- **Wide Confidence Intervals**: The confidence intervals (e.g. [4h - 54h] for a 27h prediction) are often wider than the prediction itself. This happens because Gradient Boosting trees are sequential (residuals) rather than independent like Random Forest, so bootstrapping them breaks their correlation structure and blows up the variance estimation.
+- **Retraining Blocks API**: Clicking "Retrain Model" runs synchronously on the backend, blocking the API request for ~20s. It runs in a thread pool so it doesn't freeze the whole server, but it makes the web page loader hang. Need to make it async with Celery or background tasks if I deploy this for real.
+- **Underestimated Confidence Intervals**: The CI bounds do not capture the 60h model error because GBRT tree correlation underestimates bootstrap variance.
 - **Mobile Styling**: Mobile Safari has rendering issues where the grids squish on very narrow screens (needs flex-wrap or media queries).
+- **Date Input Validation**: If a user enters a semester start date before the registration date, it results in negative `days_until_semester_start`. I added a check in `features.py` that clips it to a minimum of 0.0 to prevent the model from outputting garbage, but the frontend form should really validate and block this.
 - My date math assumes registration happens in the same timezone as the server, which will break if students are out of state.
 
 ## Next steps
